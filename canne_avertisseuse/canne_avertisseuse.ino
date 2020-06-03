@@ -36,7 +36,7 @@ void loop() {
     digitalWrite(GPS_EN, GPS_ENABLE);
     outputGPS();
     if (readGPS(false)) {
-      timer.tick();
+//      timer.tick();
       if (checkFix()) {
         Serial.println("fix...");
         Serial.print("Lat:");
