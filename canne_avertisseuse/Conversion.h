@@ -10,9 +10,10 @@
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
-#include <cstdlib>
+#include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+
 using namespace std;
 #define MAX 32
 class Conversion

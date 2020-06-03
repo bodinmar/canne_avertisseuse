@@ -1,7 +1,7 @@
 #ifndef LORA_MODULE_H_INCLUDED
 #define LORA_MODULE_H_INCLUDED
 #include <MKRWAN.h>
-#include "commisssoning.h"
+#include "commissioning.h"
 #include <stdlib.h>
 #include <stdint.h>
 using namespace std;

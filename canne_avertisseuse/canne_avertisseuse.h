@@ -2,7 +2,7 @@
 #include "Conversion.h"//library to convert data in uint8
 #include "GPS.h"
 #include <ArduinoLowPower.h>
-#
+
 
 
 Lora_Module lora;
@@ -10,8 +10,10 @@ Conversion conv;
 
 //------------------------------------------
 //GPS
-#include <timer.h>
-Timer <1, micros> timer;  // GPS reader
+#include <Timer.h>
+//Timer <1, micros> timer;  // GPS reader
+Timer timer;
+
 int32_t latitude = conv.float_int32("43.619883", 5);
 int32_t longitude = conv.float_int32("3.851704", 5);
 int32_t altitude;
