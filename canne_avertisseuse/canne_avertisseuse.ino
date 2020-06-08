@@ -46,33 +46,39 @@ void setup() {
   
   Serial.begin(9600);
   while (!Serial) ;             //tant que on n'a pas ouvert le moniteur série le programme ne s'execute pas !!!
-  Serial.println("OK");
+  Serial.println("- Serial start");
 
-//********LoRa initialization-------------------------------------------------------------------------------------
-  Serial.println("-------------------------------LoRa------------------------------"); //ajout-------------------------------------------lora------------------------
-  Serial.println("initialisation...");
+//-------------------------------------------------------------LoRa initialisation-------------------------------------------------------------------------------------
+  Serial.println("- LoRa initialisation ..."); 
   lora.Init();
-  lora.info_connect(); //ajout-------------------------------------------lora------------------------
-  
+  lora.info_connect(); 
+//digitalWrite(PinLEDLoRa, HIGH);
+//************************************************************LoRa initialisation***************************************************************************************
+//------------------------------------------------------------MMA initialisation----------------------------------------------------------------------------------------
+  Serial.println("- MMA initialisation ..."); 
 if (! mma.begin()) {
     Serial.println("Couldnt start");
+    //digitalWrite(PinLEDMMA, LOW);
     while (1);
   }
   Serial.println("MMA8451 found!");
-
- // Setup the I2C accelerometer
-  mma.enableInterrupt();
+  //digitalWrite(PinLEDMMA, HIGH);
+ 
+  mma.enableInterrupt(); // Setup the I2C accelerometer
+//***********************************************************MMA initialization*****************************************************************************************
 
   // attach pin 0 to accelerometer INT1 and enable the interrupt on voltage falling event
-  pinMode(LED_BUILTIN, OUTPUT); //6
+  pinMode(LED_BUILTIN, OUTPUT); //Pin 6
   pinMode(PinLEDEAU, OUTPUT);
   pinMode(PinLEDMOV, OUTPUT);
   pinMode(PinLEDSENDMSG, OUTPUT);
   pinMode(GPS_EN, OUTPUT);
 //  pinMode(PinLEDGPS, OUTPUT);
+  pinMode(PinLEDLoRa, OUTPUT);
+  pinMode(PinLEDMMA, OUTPUT);
+  
   digitalWrite(GPS_EN, HIGH); //--------start gps ICI---------
     
-
 //tests des LEDS
 Serial.println("tests des LEDS");
   digitalWrite(LED_BUILTIN,HIGH);
@@ -80,6 +86,8 @@ Serial.println("tests des LEDS");
   digitalWrite(PinLEDMOV,HIGH);
   digitalWrite(PinLEDSENDMSG,HIGH);
  // digitalWrite(PinLEDGPS, HIGH);
+  digitalWrite(PinLEDLoRa, HIGH);
+  digitalWrite(PinLEDMMA, HIGH);
   
   pinMode(PinEAU, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //antit rebont !!
@@ -95,8 +103,9 @@ Serial.println("tests des LEDS");
   digitalWrite(PinLEDEAU,LOW);
   digitalWrite(PinLEDMOV,LOW);
   digitalWrite(PinLEDSENDMSG,LOW);
+  digitalWrite(PinLEDLoRa, LOW);
+  digitalWrite(PinLEDMMA, LOW);
   
-
 //--------------------------GPS--------------------------
 Serial.println("Start GPS");
   startGPS();
