@@ -6,14 +6,14 @@
  commissioning.sample.h
  modification des send all et vie
  */
- //desactivation de la led gps
+ //desactivation de la led gps, nouvelles leds
  
 #include <ArduinoLowPower.h>
 #include "MMA8451_IRQ.h"
 #include "Adafruit_GPS.h"
 #include "variables.h"
 
-//declaration lora----------------------------------
+//----------------------declaration lora----------------------------------
 #include "Lora_Module.h"  //library to convert data in uint8 in old canne_avertisseuse
 #include "Conversion.h" //library use the LoRa network in old canne_avertisseuse
 
@@ -22,8 +22,8 @@ Conversion conv;
 int32_t latitude = conv.float_int32("0.010101", 5);
 int32_t longitude = conv.float_int32("0.101010", 5);
 uint8_t batterie=12;
+//------------------------fin lora-----------------------------------
 
-//fin lora-----------------------------------
 Adafruit_GPS GPS(&GPSSerial);
 MMA8451_IRQ mma = MMA8451_IRQ();
 
@@ -54,6 +54,7 @@ void setup() {
   lora.info_connect(); 
 //digitalWrite(PinLEDLoRa, HIGH);
 //************************************************************LoRa initialisation***************************************************************************************
+
 //------------------------------------------------------------MMA initialisation----------------------------------------------------------------------------------------
   Serial.println("- MMA initialisation ..."); 
 if (! mma.begin()) {
@@ -155,7 +156,6 @@ void loop()
   alarmOccurredEAU = false;
   alarmOccurredMOV = false;
 
- 
  // Serial.println(mma.readRegister(0x0C) && 0x04);
   mma.clearInterrupt();
   delay(100);
@@ -235,7 +235,7 @@ void SENDALL()
   int errorsendA;
   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
   //do{
-  uint8_t buffer[9];//ajout-------------------------------------------lora------------------------
+  uint8_t buffer[9];
   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
   buffer[1] = (uint8_t)(longitude >> 24);
   buffer[2] = (uint8_t)(longitude >> 16);
@@ -245,9 +245,8 @@ void SENDALL()
   buffer[6] = (uint8_t)(latitude >> 16);
   buffer[7] = (uint8_t)(latitude >> 8);
   buffer[8] = (uint8_t)latitude;
-  errorsendA = lora.send(buffer, 9);//ajout-------------------------------------------lora------------------------
-   // Serial.println(errorsendA); //----------------------------------lora------------------
- Serial.println("Voici le code d'erreur_: " + String(errorsendA)); //----------------------------------lora------------------
+  errorsendA = lora.send(buffer, 9);
+  Serial.println("Voici le code d'erreur_: " + String(errorsendA)); 
  // if(errorsendA<0) delay(500);
     
  // }while(errorsendA < 0);
@@ -264,14 +263,14 @@ void SENDVIE()
 {
   digitalWrite(PinLEDSENDMSG, HIGH);
   Serial.println("Send VIE");
- int errorsendB;
+  int errorsendB;
  // do{
-  uint8_t buffer[1];  //ajout-------------------------------------------lora------------------------
+  uint8_t buffer[1];  
   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)batterie; 
-  errorsendB =lora.send(buffer, 1); //ajout-------------------------------------------lora------------------------
-  Serial.println(errorsendB);
+  errorsendB =lora.send(buffer, 1); 
+  Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
+ 
  //  if(errorsendB<0) delay(500);
-  //metre un while ici !!!--------------------------------------------------------------------lora----------------------
  // }while(errorsendB);
   
   delay(50);
@@ -298,7 +297,7 @@ void startGPS(){
 
   // Mode GGA et RMC
   //GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  //
+  
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_ALLDATA);
  
@@ -350,7 +349,7 @@ void infoGPS(void)
 void lectureGPS(void)
 {
   GPStime = millis(); 
-  timer=millis();
+  timer = millis();
      //si je recoit une nouvelle trame je sort de la boucle et que que son CRC est OK
   do {   //attente d'une nouvelle trame
      
@@ -359,16 +358,15 @@ void lectureGPS(void)
     
     if (GPS.newNMEAreceived()) 
     {
-
-      if((millis() - timer) >= 1000) // LED qui fait alumé/eteint
+ /* if((millis() - timer) >= 1000) // LED qui fait alumé/eteint
       { 
-      //  if(etatledGPS) etatledGPS=false;
-      //  else if(!etatledGPS) etatledGPS=true;
+        if(etatledGPS) etatledGPS=false;
+        else if(!etatledGPS) etatledGPS=true;
   
-      //  digitalWrite(PinLEDGPS,etatledGPS);
+        digitalWrite(PinLEDGPS,etatledGPS);
         timer=millis();
       }  
-
+*/
       Serial.print("NEW");
       if(!GPS.parse(GPS.lastNMEA()))
       {
@@ -380,14 +378,6 @@ void lectureGPS(void)
 //   j'attend de recevoir deux trames bonnes pour sortir de la boucle (pb rencontré : si je prend la premire recue c'est très probable que c'est celle que j'ai reçu la derniere fois
 //  if(!GPS.fix) nombre=0;
       }
-  /*
-  if(nombre%2 == 0){        //si chiffre pair
-   digitalWrite(PinLEDGPS,HIGH);
-  }   else
-{
-  digitalWrite(PinLEDGPS,LOW);
-}
-   */
     }
   } while ((nombre<2 || !GPS.fix) && (millis() - GPStime) <= GPStimeout); //2 minutes
 
