@@ -144,7 +144,7 @@ void loop()
 {
   
   
-  if (millis() >= timer+5000)
+  if (millis() - timer >= 5000)
 {
   digitalWrite(LED_BUILTIN,HIGH);
   Serial.println("Millis");
@@ -349,7 +349,7 @@ void infoGPS(void)
 void lectureGPS(void)
 {
   GPStime = millis(); 
-  timer = millis();
+//  timer = millis();
      //si je recoit une nouvelle trame je sort de la boucle et que que son CRC est OK
   do {   //attente d'une nouvelle trame
      
