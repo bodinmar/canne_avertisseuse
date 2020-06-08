@@ -237,7 +237,8 @@ void SENDALL()
   buffer[7] = (uint8_t)(latitude >> 8);
   buffer[8] = (uint8_t)latitude;
   errorsendA = lora.send(buffer, 9);//ajout-------------------------------------------lora------------------------
-  Serial.println(errorsendA); //----------------------------------lora------------------
+   // Serial.println(errorsendA); //----------------------------------lora------------------
+ Serial.println("Voici le code d'erreur_: " + String(errorsendA)); //----------------------------------lora------------------
  // if(errorsendA<0) delay(500);
     
  // }while(errorsendA < 0);
