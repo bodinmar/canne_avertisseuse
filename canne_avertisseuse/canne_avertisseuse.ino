@@ -1,6 +1,9 @@
 #include "canne_avertisseuse.h"
 void setup() {
-  Serial.begin(115200);
+ // Serial.begin(115200);
+
+  Serial.begin(9600);
+//  while (!Serial) ; 
 
   //********GPS initialization********************************************
   pinMode(GPS_EN, OUTPUT);
@@ -8,7 +11,7 @@ void setup() {
   startGPS();
   if (GPS_ENABLE) start_fix();
 
-  timer.every(1, outputGPS);
+//  timer.every(1, outputGPS);
   //********LoRa initialization********************************************
   Serial.println("-------------------------------LoRa------------------------------");
   Serial.println("initialisation...");
