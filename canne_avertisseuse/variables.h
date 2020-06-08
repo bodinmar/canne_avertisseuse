@@ -1,11 +1,13 @@
 
 #define GPSSerial Serial1
 
-#define alerte_INIT 0 //initialisation send 
-#define alerte_VIE  1
-#define alerte_EAU  2 //??
+#define alerte_INIT 0
+#define alerte_VIE  1 
+#define alerte_EAU  2 
 #define alerte_MOV  3
 #define alerte_BAT  4
+
+#define GPStimeout 60000 //une minute
 
 //---------------------variables---------------------
 //ISRs
@@ -15,7 +17,7 @@ volatile bool alarmOccurredCLK = false;
 
 uint32_t timer = 0;         // setup + loop
 //uint32_t temps = 0;       //que dans le loop
-uint32_t GPStimeout = 0 ; //que dans le setup
+uint32_t GPStime = 0 ; //que dans le setup
 //uint32_t FIXLED = 0;      //que dans le setup
 
 

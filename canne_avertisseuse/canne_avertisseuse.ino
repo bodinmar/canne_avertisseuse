@@ -101,7 +101,7 @@ Serial.println("tests des LEDS");
 Serial.println("Start GPS");
   startGPS();
   
-  GPStimeout = millis(); 
+  GPStime = millis(); 
   timer = millis(); 
   
 Serial.println("Recuperation GPS");
@@ -118,7 +118,7 @@ do {
   //  digitalWrite(PinLEDGPS,etatledGPS);
     timer=millis();
   }
- } while (!GPS.fix && (millis() - GPStimeout) <= 120000); // il faut qu'on est une position gps ou timout de 3 mins
+ } while (!GPS.fix && (millis() - GPStime) <= GPStimeout); // il faut qu'on est une position gps ou timout de 3 mins
  
  digitalWrite(GPS_EN, LOW); //on etein le GPS ICI
  //digitalWrite(PinLEDGPS,LOW);
@@ -340,7 +340,7 @@ void infoGPS(void)
 
 void lectureGPS(void)
 {
-  GPStimeout = millis(); 
+  GPStime = millis(); 
   timer=millis();
      //si je recoit une nouvelle trame je sort de la boucle et que que son CRC est OK
   do {   //attente d'une nouvelle trame
@@ -380,9 +380,9 @@ void lectureGPS(void)
 }
    */
     }
-  } while ((nombre<2 || !GPS.fix) && (millis() - GPStimeout) <= 60000); //2 minutes
+  } while ((nombre<2 || !GPS.fix) && (millis() - GPStime) <= GPStimeout); //2 minutes
 
-  Serial.println("\t fix? " + String(GPS.fix) + "\t temps mis pour trouver le fix: " + String(millis() - GPStimeout));
+  Serial.println("\t fix? " + String(GPS.fix) + "\t temps mis pour trouver le fix: " + String(millis() - GPStime));
 
   nombre=0 ;
   longitude= conv.float_int32(GPS.longitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
