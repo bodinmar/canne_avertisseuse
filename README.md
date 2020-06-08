@@ -1,8 +1,6 @@
 ### Notes
-note de cette version : 03/06/2020
-Version sur mon pc : eau_MMA_interupt_3_V7_atestersurlora
-provient de : eau_MMA_interupt_3_V7 
-cette version a été testée sans la prise en chage du reseau lora 
+note de cette version : 05/06/2020
+fonctionne avec la canne 1
 
 # Canne-avertisseuse
 "La canne_avertisseuse" is an alert system for gravity irrigation. They use LoRa to communicate and detect the presence of water  
