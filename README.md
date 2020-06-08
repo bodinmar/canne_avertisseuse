@@ -2,6 +2,12 @@
 note de cette version : 05/06/2020
 fonctionne avec la canne 1
 
+### Reste a faire : 
+- fonction millis()
+- batterie
+- led IHM lora
+- sleep
+
 # Canne-avertisseuse
 "La canne_avertisseuse" is an alert system for gravity irrigation. They use LoRa to communicate and detect the presence of water  
 ## Hardware
