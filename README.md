@@ -3,9 +3,9 @@ note de cette version : 05/06/2020
 fonctionne avec la canne 1
 
 ### Reste a faire : 
-- fonction millis()
-- batterie
-- led IHM lora
+- mesure de la tension batterie (pont diviseur + mesure)
+- finaliser l'IHM
+- inverser la décalaration  de l'IHM dans le setup
 - sleep
 
 # Canne-avertisseuse
