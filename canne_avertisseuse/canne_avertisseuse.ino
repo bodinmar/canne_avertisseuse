@@ -6,6 +6,8 @@
  commissioning.sample.h
  modification des send all et vie
  */
+ //desactivation de la led gps
+ 
 #include <ArduinoLowPower.h>
 #include "MMA8451_IRQ.h"
 #include "Adafruit_GPS.h"
@@ -17,8 +19,8 @@
 
 Lora_Module lora;
 Conversion conv;
-int32_t latitude = conv.float_int32("43.619883", 5);
-int32_t longitude = conv.float_int32("3.851704", 5);
+int32_t latitude = conv.float_int32("0.010101", 5);
+int32_t longitude = conv.float_int32("0.101010", 5);
 uint8_t batterie=12;
 
 //fin lora-----------------------------------
@@ -67,7 +69,7 @@ if (! mma.begin()) {
   pinMode(PinLEDMOV, OUTPUT);
   pinMode(PinLEDSENDMSG, OUTPUT);
   pinMode(GPS_EN, OUTPUT);
-  pinMode(PinLEDGPS, OUTPUT);
+//  pinMode(PinLEDGPS, OUTPUT);
   digitalWrite(GPS_EN, HIGH); //--------start gps ICI---------
     
 
@@ -77,7 +79,7 @@ Serial.println("tests des LEDS");
   digitalWrite(PinLEDEAU,HIGH);
   digitalWrite(PinLEDMOV,HIGH);
   digitalWrite(PinLEDSENDMSG,HIGH);
-  digitalWrite(PinLEDGPS, HIGH);
+ // digitalWrite(PinLEDGPS, HIGH);
   
   pinMode(PinEAU, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //antit rebont !!
@@ -88,7 +90,7 @@ Serial.println("tests des LEDS");
 
   delay(800); //le temps que l'on voie des leds s'allumer
   
-  Serial.println("start V7");
+  Serial.println("start V7.1");
   digitalWrite(LED_BUILTIN,LOW);
   digitalWrite(PinLEDEAU,LOW);
   digitalWrite(PinLEDMOV,LOW);
@@ -110,15 +112,16 @@ do {
  
   if((millis() - timer) >= 1000)
   {
-    if(etatledGPS) etatledGPS=false;
-    else if(!etatledGPS) {etatledGPS=true; Serial.println("attente d'un fix");}
-    digitalWrite(PinLEDGPS,etatledGPS);
+    Serial.println("attente d'un fix");
+  //  if(etatledGPS) etatledGPS=false;
+  //  else if(!etatledGPS) {etatledGPS=true; }
+  //  digitalWrite(PinLEDGPS,etatledGPS);
     timer=millis();
   }
- } while (!GPS.fix && (millis() - GPStimeout) <= 180000); // il faut qu'on est une position gps ou timout de 3 mins
+ } while (!GPS.fix && (millis() - GPStimeout) <= 120000); // il faut qu'on est une position gps ou timout de 3 mins
  
  digitalWrite(GPS_EN, LOW); //on etein le GPS ICI
- digitalWrite(PinLEDGPS,LOW);
+ //digitalWrite(PinLEDGPS,LOW);
  
  Serial.println("fix? " + String(GPS.fix));
  
@@ -182,9 +185,10 @@ if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {
    alarmOccurredMOVP = true;
 }
 
-if(tour >= 10)
+if(tour >= 25)
 {
-//  SENDVIE();
+  alerte=alerte_VIE;
+  SENDVIE();
   tour=0;
 }
 
@@ -219,9 +223,9 @@ void SENDALL()
    }
     infoGPS();
   //-------------------fin GPS-------------------------
-  
+  int errorsendA;
   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
-  
+  //do{
   uint8_t buffer[9];//ajout-------------------------------------------lora------------------------
   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
   buffer[1] = (uint8_t)(longitude >> 24);
@@ -232,7 +236,11 @@ void SENDALL()
   buffer[6] = (uint8_t)(latitude >> 16);
   buffer[7] = (uint8_t)(latitude >> 8);
   buffer[8] = (uint8_t)latitude;
-  lora.send(buffer, 9);//ajout-------------------------------------------lora------------------------
+  errorsendA = lora.send(buffer, 9);//ajout-------------------------------------------lora------------------------
+  Serial.println(errorsendA); //----------------------------------lora------------------
+ // if(errorsendA<0) delay(500);
+    
+ // }while(errorsendA < 0);
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW);
@@ -246,10 +254,15 @@ void SENDVIE()
 {
   digitalWrite(PinLEDSENDMSG, HIGH);
   Serial.println("Send VIE");
-  
+ int errorsendB;
+ // do{
   uint8_t buffer[1];  //ajout-------------------------------------------lora------------------------
   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)batterie; 
-  lora.send(buffer, 1); //ajout-------------------------------------------lora------------------------
+  errorsendB =lora.send(buffer, 1); //ajout-------------------------------------------lora------------------------
+  Serial.println(errorsendB);
+ //  if(errorsendB<0) delay(500);
+  //metre un while ici !!!--------------------------------------------------------------------lora----------------------
+ // }while(errorsendB);
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW); 
@@ -339,10 +352,10 @@ void lectureGPS(void)
 
       if((millis() - timer) >= 1000) // LED qui fait alumé/eteint
       { 
-        if(etatledGPS) etatledGPS=false;
-        else if(!etatledGPS) etatledGPS=true;
+      //  if(etatledGPS) etatledGPS=false;
+      //  else if(!etatledGPS) etatledGPS=true;
   
-        digitalWrite(PinLEDGPS,etatledGPS);
+      //  digitalWrite(PinLEDGPS,etatledGPS);
         timer=millis();
       }  
 
@@ -366,12 +379,12 @@ void lectureGPS(void)
 }
    */
     }
-  } while ((nombre<2 || !GPS.fix) && (millis() - GPStimeout) <= 120000); //2 minutes
+  } while ((nombre<2 || !GPS.fix) && (millis() - GPStimeout) <= 60000); //2 minutes
 
   Serial.println("\t fix? " + String(GPS.fix) + "\t temps mis pour trouver le fix: " + String(millis() - GPStimeout));
 
   nombre=0 ;
-  longitude= GPS.longitudeDegrees;  //ajout-------------------------------------------lora------------------------
-  latitude= GPS.latitudeDegrees;  //ajout-------------------------------------------lora------------------------
-  digitalWrite(PinLEDGPS,LOW);
+  longitude= conv.float_int32(GPS.longitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
+  latitude= conv.float_int32(GPS.latitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
+ // digitalWrite(PinLEDGPS,LOW);
 }

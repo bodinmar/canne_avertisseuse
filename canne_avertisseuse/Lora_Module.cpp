@@ -60,6 +60,7 @@ bool Lora_Module::send(uint8_t *buffer, int len) {
   modem.write(buffer, len);
   err = modem.endPacket(true);
   modem.sleep();
+  Serial.println("Voici l'erreur : " +String(err));
   if (err > 0) {
     Serial.println("message correctly send !");
     return err;

@@ -26,7 +26,7 @@ uint8_t nombre = 0 ;
 bool SEND_ALL = 0;
 bool alarmOccurredEAUP = true;
 bool alarmOccurredMOVP = true;
-bool etatledGPS = false;
+//bool etatledGPS = false;
 //bool TRAMEGPS = false;
 bool GPS_ENABLE = false;
 
@@ -36,7 +36,7 @@ const uint8_t PinMOV = 5;
 const uint8_t PinCLK = 7;
 
 //OUT
-const uint8_t PinLEDGPS = 2;
+//const uint8_t PinLEDGPS = 2;
 const uint8_t GPS_EN = 3;
 const uint8_t PinLEDEAU = 9;
 const uint8_t PinLEDMOV = 8;
