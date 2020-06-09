@@ -10,7 +10,7 @@ Conversion conv;
 
 //------------------------------------------
 //GPS
-#include <Timer.h>
+#include <timer.h>
 //Timer <1, micros> timer;  // GPS reader
 Timer timer;
 
@@ -55,10 +55,11 @@ int mesure;
 
 #define alerte_INITIAL 0//initial send 
 #define alerte_HEAR 1
-#define alerte_WATER  2
+#define alerte_WATER 2
 #define alerte_MOV  3
 #define alerte_BAT  4
 int alerte;
+
 enum {
   MONITORING,
   HEARBEAT,
@@ -66,8 +67,8 @@ enum {
 };
 int STATE = INITIAL;
 
-#define tempo 60000 //en ms
-#define nbr_monitoring 60
+#define tempo 10000 //en ms   --> 10 secondes
+#define nbr_monitoring 12     // toute les 2 mins
 int compteur = nbr_monitoring;
 void sensor();
 void Initial();

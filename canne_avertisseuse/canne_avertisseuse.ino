@@ -3,7 +3,7 @@ void setup() {
  // Serial.begin(115200);
 
   Serial.begin(9600);
-//  while (!Serial) ; 
+ // while (!Serial) ; 
 
   //********GPS initialization********************************************
   pinMode(GPS_EN, OUTPUT);
@@ -35,7 +35,7 @@ void loop() {
 
   //********GPS read********************************************
 
-  if (GPS_ENABLE == true && (millis() - GPS_timestart < 300000)) {
+  if (GPS_ENABLE == true && (millis() - GPS_timestart < 5000)) {   //10 secondes (a modifier) timeout gps
     digitalWrite(GPS_EN, GPS_ENABLE);
     outputGPS();
     if (readGPS(false)) {
@@ -79,30 +79,30 @@ void loop() {
           alerte =  alerte_MOV;
           send_all();
           start_fix();
-          Serial.println("ALERTE 2 ");
+          Serial.println("\t \t ALERTE 3 ");
         }
-        else if (mesure > 1000) {
+        else if (mesure > 900) {
           alerte = alerte_WATER;
+          //Serial.print(alerte_WATER); Serial.println(alerte);
           send_all();
           start_fix();
-          Serial.println("ALERTE 1 ");
+          Serial.println("\t \t ALERTE 2 ");
 
         }
         else if ((batterie / 32) * 1, 7 < 1 ) {
           alerte = alerte_BAT;
           send_all();
           start_fix();
-          Serial.println("ALERTE 3");
+          Serial.println("\t \t ALERTE 4");
         }
         else {
           if (compteur == 0) {
-            Serial.print("hearbeat");
+            Serial.print("\t \t hearbeat");
             alerte = alerte_HEAR;
-            Serial.print(alerte);
-            STATE = MONITORING;
             send_hearbeat();
-            start_fix();
+           // start_fix();
             compteur = nbr_monitoring;
+            STATE = MONITORING;
           }
           compteur--;
           Serial.println("compteur:" + String(compteur));
@@ -141,9 +141,10 @@ Serial.println("Batterie:" + String(batterie));
   Serial.println("Z:" + String(Z[0]));
 }
 void send_all() {
-  Serial.println("envoie totale");
+  Serial.println("envoie total");
+  Serial.println("code : " + String(alerte));
   uint8_t buffer[9];
-  buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)batterie & 0b11111;
+  buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
   buffer[1] = (uint8_t)(longitude >> 24);
   buffer[2] = (uint8_t)(longitude >> 16);
   buffer[3] = (uint8_t)(longitude >> 8);
@@ -155,8 +156,9 @@ void send_all() {
   lora.send(buffer, 9);
 }
 void send_hearbeat() {
+  Serial.println("code : " + String(alerte));
   uint8_t buffer[1];
-  buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)batterie;
+  buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
   lora.send(buffer, 1);
 }
 void start_fix() {
