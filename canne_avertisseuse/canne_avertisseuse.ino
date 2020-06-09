@@ -7,6 +7,7 @@
  modification des send all et vie
  */
  //desactivation de la led gps, nouvelles leds
+ //lecture batterie
  
 #include <ArduinoLowPower.h>
 #include "MMA8451_IRQ.h"
@@ -33,6 +34,7 @@ void lectureGPS(void);
 void infoGPS(void);
 void SENDALL(void);
 void SENDVIE(void);
+uint8_t lecture_batt(void);
 
 //fonctions exécutées lors d'une interuption
 void alarmEventEAU(void);
@@ -134,7 +136,7 @@ do {
  
   SENDALL();
   mma.clearInterrupt(); //au cas ou il y a eu detection de mouvement pendant la recherge cela l'anulle (meme s'il n'y a aucune conséquance sur l'envoie de nv msg)
-  Serial.println("start V7.2");
+  Serial.println("start V7.3");
 }
 
 void loop()
@@ -228,9 +230,8 @@ void SENDALL()
    }
     infoGPS();
   //-------------------fin GPS-------------------------
-  //----------------recuperation de la tension batterie-------- 
-  int tension = analogRead(PinBatt);
-  //il faut le coder sur 5 bits
+  
+ batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
 
   //-----------------------fin batt------------------------------
   int errorsendA;
@@ -265,6 +266,7 @@ void SENDVIE()
 {
   digitalWrite(PinLEDSENDMSG, HIGH);
   Serial.println("Send VIE");
+  batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
   int errorsendB;
  // do{
   uint8_t buffer[1];  
@@ -389,4 +391,15 @@ void lectureGPS(void)
   longitude= conv.float_int32(GPS.longitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
   latitude= conv.float_int32(GPS.latitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
  // digitalWrite(PinLEDGPS,LOW);
+}
+
+uint8_t lecture_batt (void)
+{
+  float val=11.3;
+  // val = analogRead(PinBatt);
+  // ici converions du pont diviseur
+  val=val-10.0;
+  val=(val*31.0)/5.0;
+
+  return val;
 }
