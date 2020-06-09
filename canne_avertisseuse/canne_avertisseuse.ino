@@ -228,7 +228,13 @@ void SENDALL()
    }
     infoGPS();
   //-------------------fin GPS-------------------------
+  //----------------recuperation de la tension batterie-------- 
+  int tension = analogRead(PinBatt);
+  //il faut le coder sur 5 bits
+
+  //-----------------------fin batt------------------------------
   int errorsendA;
+  
   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
   //do{
   uint8_t buffer[9];

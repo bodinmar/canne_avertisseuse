@@ -36,6 +36,7 @@ bool GPS_ENABLE = false;
 const uint8_t PinEAU = 4;
 const uint8_t PinMOV = 5;
 const uint8_t PinCLK = 7;
+const uint8_t PinBatt = A0;
 
 //OUT
 const uint8_t PinLEDLoRa = 2;
