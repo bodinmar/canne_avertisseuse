@@ -67,7 +67,7 @@ bool Lora_Module::send(uint8_t *buffer, int len) {
   }
   else {
     Serial.println("Error sending message :(");
-    return err;
+    return err;                                     //retourne un 1 si c'est positif ou un 0 si c'est négatif
   }
 }
 
