@@ -38,7 +38,6 @@ const uint8_t PinMOV = 5;
 const uint8_t PinCLK = 7;
 
 //OUT
-//const uint8_t PinLEDGPS = 2;
 const uint8_t PinLEDLoRa = 2;
 const uint8_t PinLEDMMA = 1;
 const uint8_t GPS_EN = 3;

@@ -43,6 +43,33 @@ void alarmEventCLK(void);
 bool RECEPTION(void);
 
 void setup() {
+
+  pinMode(LED_BUILTIN, OUTPUT); //Pin 6
+  pinMode(PinLEDEAU, OUTPUT);
+  pinMode(PinLEDMOV, OUTPUT);
+  pinMode(PinLEDSENDMSG, OUTPUT);
+  pinMode(PinLEDLoRa, OUTPUT);
+  pinMode(PinLEDMMA, OUTPUT);
+  pinMode(GPS_EN, OUTPUT);
+  digitalWrite(GPS_EN, HIGH);           //--------start gps ICI---------
+    
+//--------------------------------tests des LEDS------------------------------------------
+  Serial.println("tests des LEDS");
+  digitalWrite(LED_BUILTIN,HIGH);
+  digitalWrite(PinLEDEAU,HIGH);
+  digitalWrite(PinLEDMOV,HIGH);
+  digitalWrite(PinLEDSENDMSG,HIGH);
+  digitalWrite(PinLEDLoRa, HIGH);
+  digitalWrite(PinLEDMMA, HIGH);
+
+  delay(800); //le temps que l'on voie des leds s'allumer
+  
+  digitalWrite(LED_BUILTIN,LOW);
+  digitalWrite(PinLEDEAU,LOW);
+  digitalWrite(PinLEDMOV,LOW);
+  digitalWrite(PinLEDSENDMSG,LOW);
+  digitalWrite(PinLEDLoRa, LOW);
+  digitalWrite(PinLEDMMA, LOW);
   
   Serial.begin(9600);
   while (!Serial) ;             //tant que on n'a pas ouvert le moniteur série le programme ne s'execute pas !!!
@@ -52,43 +79,23 @@ void setup() {
   Serial.println("- LoRa initialisation ..."); 
   lora.Init();
   lora.info_connect(); 
-//digitalWrite(PinLEDLoRa, HIGH);
+  digitalWrite(PinLEDLoRa, HIGH);
 //************************************************************LoRa initialisation***************************************************************************************
 
 //------------------------------------------------------------MMA initialisation----------------------------------------------------------------------------------------
   Serial.println("- MMA initialisation ..."); 
-if (! mma.begin()) {
-    Serial.println("Couldnt start");
-    //digitalWrite(PinLEDMMA, LOW);
+  if (! mma.begin()) {
+    Serial.println("\t Couldnt start");
+    digitalWrite(PinLEDMMA, LOW);
     while (1);
   }
-  Serial.println("MMA8451 found!");
-  //digitalWrite(PinLEDMMA, HIGH);
+  Serial.println("\t MMA8451 found!");
+  digitalWrite(PinLEDMMA, HIGH);
  
   mma.enableInterrupt(); // Setup the I2C accelerometer
 //***********************************************************MMA initialization*****************************************************************************************
 
-  // attach pin 0 to accelerometer INT1 and enable the interrupt on voltage falling event
-  pinMode(LED_BUILTIN, OUTPUT); //Pin 6
-  pinMode(PinLEDEAU, OUTPUT);
-  pinMode(PinLEDMOV, OUTPUT);
-  pinMode(PinLEDSENDMSG, OUTPUT);
-  pinMode(GPS_EN, OUTPUT);
-//  pinMode(PinLEDGPS, OUTPUT);
-  pinMode(PinLEDLoRa, OUTPUT);
-  pinMode(PinLEDMMA, OUTPUT);
-  
-  digitalWrite(GPS_EN, HIGH); //--------start gps ICI---------
-    
-//tests des LEDS
-Serial.println("tests des LEDS");
-  digitalWrite(LED_BUILTIN,HIGH);
-  digitalWrite(PinLEDEAU,HIGH);
-  digitalWrite(PinLEDMOV,HIGH);
-  digitalWrite(PinLEDSENDMSG,HIGH);
- // digitalWrite(PinLEDGPS, HIGH);
-  digitalWrite(PinLEDLoRa, HIGH);
-  digitalWrite(PinLEDMMA, HIGH);
+//--------------------interuptions ------------------------
   
   pinMode(PinEAU, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //antit rebont !!
@@ -96,16 +103,6 @@ Serial.println("tests des LEDS");
   attachInterrupt(digitalPinToInterrupt(PinMOV), alarmEventMOV, FALLING);
 //  pinMode(PinCLK, INPUT_PULLUP);
 //  attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
-
-  delay(800); //le temps que l'on voie des leds s'allumer
-  
-  Serial.println("start V7.1");
-  digitalWrite(LED_BUILTIN,LOW);
-  digitalWrite(PinLEDEAU,LOW);
-  digitalWrite(PinLEDMOV,LOW);
-  digitalWrite(PinLEDSENDMSG,LOW);
-  digitalWrite(PinLEDLoRa, LOW);
-  digitalWrite(PinLEDMMA, LOW);
   
 //--------------------------GPS--------------------------
 Serial.println("Start GPS");
@@ -137,12 +134,11 @@ do {
  
   SENDALL();
   mma.clearInterrupt(); //au cas ou il y a eu detection de mouvement pendant la recherge cela l'anulle (meme s'il n'y a aucune conséquance sur l'envoie de nv msg)
-  Serial.println("fin Setup");
+  Serial.println("start V7.2");
 }
 
 void loop()
 {
-  
   
   if (millis() - timer >= 5000)
 {
@@ -181,7 +177,7 @@ if (alarmOccurredEAU == true && alarmOccurredEAUP==false)
    alarmOccurredEAUP = true;
 }
 
-if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {
+else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modification : else ici
 
   Serial.println("INTERUPTION_MOV");
   digitalWrite(PinLEDMOV,HIGH);
