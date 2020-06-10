@@ -1,11 +1,9 @@
 ### Notes
-note de cette version : 05/06/2020
+note de cette version : 10/06/2020
 Fonctionne avec la canne n°1
 
 ### Reste à faire : 
-- mesure de la tension batterie (pont diviseur + mesure)
-- finaliser l'IHM
-- inverser la décalaration  de l'IHM dans le setup
+- mesure de la tension batterie (pont diviseur + mesure) (presque finit)
 - sleep
 
 # Canne-avertisseuse

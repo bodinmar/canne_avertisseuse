@@ -7,7 +7,7 @@
 #define alerte_MOV  3
 #define alerte_BAT  4
 
-#define GPStimeout 10000 //une minute
+#define GPStimeout 10000 //
 
 //---------------------variables---------------------
 //ISRs
@@ -31,6 +31,8 @@ bool alarmOccurredMOVP = true;
 //bool etatledGPS = false;
 //bool TRAMEGPS = false;
 bool GPS_ENABLE = false;
+
+float seuil_critique = 11.5; //tension critique de la batterie
 
 //IN
 const uint8_t PinEAU = 4;

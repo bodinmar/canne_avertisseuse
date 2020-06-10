@@ -1,13 +1,6 @@
 //interuptions + GPS
-/* test lora :
- ajout des librairue 
- "Conversion.h"
- "Lora_Module.h" 
- commissioning.sample.h
- modification des send all et vie
- */
- //desactivation de la led gps, nouvelles leds
- //lecture batterie
+//messages LoRa
+//lecture batterie
  
 #include <ArduinoLowPower.h>
 #include "MMA8451_IRQ.h"
@@ -122,9 +115,7 @@ do {
   if((millis() - timer) >= 1000)
   {
     Serial.println("attente d'un fix");
-  //  if(etatledGPS) etatledGPS=false;
-  //  else if(!etatledGPS) {etatledGPS=true; }
-  //  digitalWrite(PinLEDGPS,etatledGPS);
+
     timer=millis();
   }
  } while (!GPS.fix && (millis() - GPStime) <= GPStimeout); // il faut qu'on est une position gps ou timout de 3 mins
@@ -194,7 +185,6 @@ else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modifica
 
 if(tour >= 25)
 {
-  alerte=alerte_VIE;
   SENDVIE();
   tour=0;
 }
@@ -266,7 +256,15 @@ void SENDVIE()
 {
   digitalWrite(PinLEDSENDMSG, HIGH);
   Serial.println("Send VIE");
+  
   batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
+
+if(batterie < seuil_critique) {
+  alerte=alerte_BAT;
+} else {
+  alerte=alerte_VIE;
+}
+  
   int errorsendB;
  // do{
   uint8_t buffer[1];  
@@ -362,15 +360,6 @@ void lectureGPS(void)
     
     if (GPS.newNMEAreceived()) 
     {
- /* if((millis() - timer) >= 1000) // LED qui fait alumé/eteint
-      { 
-        if(etatledGPS) etatledGPS=false;
-        else if(!etatledGPS) etatledGPS=true;
-  
-        digitalWrite(PinLEDGPS,etatledGPS);
-        timer=millis();
-      }  
-*/
       Serial.print("NEW");
       if(!GPS.parse(GPS.lastNMEA()))
       {
@@ -397,9 +386,17 @@ uint8_t lecture_batt (void)
 {
   float val=11.3;
   // val = analogRead(PinBatt);
-  // ici converions du pont diviseur
-  val=val-10.0;
-  val=(val*31.0)/5.0;
-
-  return val;
+  // ici converions du pont diviseur 
+  //val=(val*3.3)/1023.0;
+  //val=val/0.22; //coef = 0.22
+  val=val-10.0;   //precision de 0.16 (5/31) sur 5 volts au lieus des 0.45 V (14/31)
+  
+  if(val<0.0)
+  {
+    val=0.0;
+    return val;
+  } else {
+     val=(val*31.0)/5.0;
+     return val;
+  }  
 }
