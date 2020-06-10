@@ -144,7 +144,7 @@ void loop()
   alarmOccurredMOVP = false;
   alarmOccurredEAU = false;
   alarmOccurredMOV = false;
-
+  
  // Serial.println(mma.readRegister(0x0C) && 0x04);
   mma.clearInterrupt();
   delay(100);
@@ -261,7 +261,13 @@ void SENDVIE()
 
 if(batterie < seuil_critique) {
   alerte=alerte_BAT;
-} else {
+  
+} else if (alerte=alerte_EAU) {
+  
+} else if (alerte=alerte_MOV) {
+  
+} else
+{
   alerte=alerte_VIE;
 }
   
@@ -277,6 +283,7 @@ if(batterie < seuil_critique) {
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW); 
+  alerte=alerte_VIE;
 }
 
 /*
