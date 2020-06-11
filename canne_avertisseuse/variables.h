@@ -24,6 +24,7 @@ uint32_t GPStime = 0 ; //que dans le setup
 uint8_t alerte=alerte_INIT;
 uint8_t tour = 0;
 uint8_t nombre = 0 ;
+uint8_t batterie;
 
 bool SEND_ALL = 0;
 bool alarmOccurredEAUP = true;

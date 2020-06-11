@@ -3,7 +3,8 @@ note de cette version : 10/06/2020
 Fonctionne avec la canne n°1
 
 ### Reste à faire : 
-- mesure de la tension batterie (pont diviseur + mesure) (presque finit)
+- quelle tension max pour la batterie (14 ou 15V) ? 
+- reveil tout les combient de temps ? sachant que l'utilisateur doit pouvoir voir ce "reveil" (led qui s'allume)
 - sleep
 
 # Canne-avertisseuse
