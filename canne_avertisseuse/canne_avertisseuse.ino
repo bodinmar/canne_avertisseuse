@@ -182,7 +182,7 @@ else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modifica
    alarmOccurredMOVP = true;
 }
 
-if(tour >= 25)
+if(tour >= 6)
 {
   SENDVIE();
   tour=0;
@@ -229,6 +229,7 @@ void SENDALL()
   //do{
   uint8_t buffer[9];
   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
+  Serial.println(buffer[0], HEX);
   buffer[1] = (uint8_t)(longitude >> 24);
   buffer[2] = (uint8_t)(longitude >> 16);
   buffer[3] = (uint8_t)(longitude >> 8);
@@ -258,25 +259,26 @@ void SENDVIE()
   
   batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
 
-if(batterie < seuil_critique) {
+ if (alerte == alerte_EAU || alerte == alerte_MOV) {
+
+} else  if(batterie < seuil_critique) {
   alerte=alerte_BAT;
-  
-} else if (alerte=alerte_EAU) {
-  
-} else if (alerte=alerte_MOV) {
-  
+
 } else
 {
   alerte=alerte_VIE;
 }
-  
+   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
+   Serial.print("\t \t Send alerte: " + String(batterie) +"\n");
+  // Serial.print("\t \t Send alerte: " + String(batterie) +"\n");
   int errorsendB;
  // do{
   uint8_t buffer[1];  
-  buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)batterie; 
+   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
+   
   errorsendB =lora.send(buffer, 1); 
-  Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
- 
+ // Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
+ Serial.println(buffer[0], HEX);                                      // 40 normalement mais ici cela affiche 80
  //  if(errorsendB<0) delay(500);
  // }while(errorsendB);
   
@@ -398,15 +400,15 @@ uint8_t lecture_batt (void)
   val=(val*3.3)/1023.0;
   Serial.println("tension en volt : " + String(val));
   
-  val=val/0.22;   //coef pont diviseur = 0.22 R1 = 35,45k, R2=10k
+  val=val/0.234;   //coef pont diviseur = 0.22 R1 = 326k, R2=100k
   val=val-10.0;   //precision de 0.16 (5/31) sur 5 volts au lieus des 0.45 V (14/31)
-   
+
   if(val<0.0)
   {
     val=0.0;
     return val;
   } else {
-     val=(val*31.0)/5.0;  //code les 5 Volts sur 5 bits
+     val=(val*31.0)/4.0;  //code les 4 Volts sur 5 bits
      return val;
   }  
 }

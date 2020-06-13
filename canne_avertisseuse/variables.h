@@ -7,7 +7,7 @@
 #define alerte_MOV  3
 #define alerte_BAT  4
 
-#define GPStimeout 10000 //
+#define GPStimeout 1000 //
 
 //---------------------variables---------------------
 //ISRs
