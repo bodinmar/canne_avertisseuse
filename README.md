@@ -1,11 +1,13 @@
 ### Notes
-note de cette version : 10/06/2020
+note de cette version : 15/06/2020
 Fonctionne avec la canne n°1
 
 ### Reste à faire : 
-- quelle tension max pour la batterie (14 ou 15V) ? 
-- reveil tout les combient de temps ? sachant que l'utilisateur doit pouvoir voir ce "reveil" (led qui s'allume)
 - sleep
+- gps
+- mode dégradé = delestage
+comment savoir si la canne est toujours connéctée au réseau ? 
+le uplink n'est pas configuré dans ttn
 
 # Canne-avertisseuse
 "La canne_avertisseuse" is an alert system for gravity irrigation. They use LoRa to communicate and detect the presence of water  
@@ -63,7 +65,7 @@ The ABP parameters will only be completed in the case of an ABP connection.
 ### ALERT
 * water alert
 * motion/theft alert 
-* battery alert -> NON
+* battery alert
 In the case of one of these alerts, a message containing the alert type, battery value and GPS coordinates is sent 
 otherwise only a heartbeat is sent regularly 
 
