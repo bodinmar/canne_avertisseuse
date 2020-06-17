@@ -34,7 +34,14 @@ bool alarmOccurredMOVP = true;
 bool GPS_ENABLE = false;
 
 float seuil_critique = 11.5; //tension critique de la batterie
-
+bool delestage=0;   //si = 1 cela veut dire que la tension a tellement chuté que cela peut poser problème on arrete donc certain composants comme le gps
+/*
+11.2=0%
+11.8=25%
+12.2=50%
+12.5=75%
+12.9=100%
+ */
 //IN
 const uint8_t PinEAU = 4;
 const uint8_t PinMOV = 5;
