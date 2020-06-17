@@ -1,15 +1,11 @@
 ### Notes
-note de cette version : 16/06/2020
+note de cette version : 17/06/2020
 Fonctionne avec la canne n°1
 
 ### Reste à faire : 
-- sleep
-- gps
-- mode dégradé = delestage
-comment savoir si la canne est toujours connéctée au réseau ? 
-le uplink n'est pas configuré dans ttn
-reception du message retour 
-si pas reçu alors on réenvoi le msg (1 ou 2 fois)
+- gps ??
+- accusé de réception
+- comment savoir si la canne est toujours connécté au réseau ? 
 
 # Canne-avertisseuse
 "La canne_avertisseuse" is an alert system for gravity irrigation. They use LoRa to communicate and detect the presence of water  

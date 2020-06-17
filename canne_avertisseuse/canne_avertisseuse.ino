@@ -38,41 +38,43 @@ bool RECEPTION(void);
 
 void setup() {
 
-  pinMode(LED_BUILTIN, OUTPUT); //Pin 6
+  pinMode(PinLEDProg, OUTPUT); //Pin 6
   pinMode(PinLEDEAU, OUTPUT);
   pinMode(PinLEDMOV, OUTPUT);
   pinMode(PinLEDSENDMSG, OUTPUT);
   pinMode(PinLEDLoRa, OUTPUT);
   pinMode(PinLEDMMA, OUTPUT);
+  pinMode(PinLEDAlerteBat,OUTPUT);
   pinMode(GPS_EN, OUTPUT);
   digitalWrite(GPS_EN, HIGH);           //--------on démare le gps ici---------
     
 //--------------------------------tests des LEDS------------------------------------------
   Serial.println("tests des LEDS");
-  digitalWrite(LED_BUILTIN,HIGH);
+  digitalWrite(PinLEDProg,HIGH);
   digitalWrite(PinLEDEAU,HIGH);
   digitalWrite(PinLEDMOV,HIGH);
   digitalWrite(PinLEDSENDMSG,HIGH);
   digitalWrite(PinLEDLoRa, HIGH);
   digitalWrite(PinLEDMMA, HIGH);
-
+  digitalWrite(PinLEDAlerteBat, HIGH);
   delay(1000); //le temps que l'on voie des leds s'allumer
   
-  digitalWrite(LED_BUILTIN,LOW);
   digitalWrite(PinLEDEAU,LOW);
   digitalWrite(PinLEDMOV,LOW);
   digitalWrite(PinLEDSENDMSG,LOW);
   digitalWrite(PinLEDLoRa, LOW);
   digitalWrite(PinLEDMMA, LOW);
+  digitalWrite(PinLEDAlerteBat, HIGH);
   
   Serial.begin(9600);
-  while (!Serial) ;             //tant que on n'a pas ouvert le moniteur série le programme ne s'execute pas !!!
+ // while (!Serial) ;             //tant que on n'a pas ouvert le moniteur série le programme ne s'execute pas !!!
+  // toute les messages sur le port série sont a enlever lors de l'utilisation finale
   Serial.println("- Serial start");
 
 //-------------------------------------------------------------LoRa initialisation-------------------------------------------------------------------------------------
   Serial.println("- LoRa initialisation ..."); 
-  lora.Init();
-  lora.info_connect(); 
+//  lora.Init();
+//  lora.info_connect(); 
   digitalWrite(PinLEDLoRa, HIGH);
 //************************************************************LoRa initialisation***************************************************************************************
 
@@ -89,21 +91,11 @@ void setup() {
   mma.enableInterrupt(); // Setup the I2C accelerometer
 //***********************************************************MMA initialization*****************************************************************************************
 
-//--------------------interuptions ------------------------
-  
-  pinMode(PinEAU, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //antit rebont !!
-  pinMode(PinMOV, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PinMOV), alarmEventMOV, FALLING);
-  pinMode(PinCLK, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
-  
 //--------------------------GPS--------------------------
 Serial.println("Start GPS");
   startGPS();
   
-  GPStime = millis(); 
-  timer = millis(); 
+  time = millis(); 
   
 Serial.println("Recuperation GPS");
 
@@ -111,13 +103,9 @@ do {
   GPS.read();
   GPS.parse(GPS.lastNMEA());
  
-  if((millis() - timer) >= 1000)
-  {
-    Serial.println("attente d'un fix");
+  Serial.println('0');
 
-    timer=millis();
-  }
- } while (!GPS.fix && (millis() - GPStime) <= GPStimeout); // il faut qu'on est une position gps ou timout de 3 mins
+ } while (!GPS.fix && (millis() - time) <= GPStimeout); // il faut qu'on est une position gps ou timout de 3 mins
  
  digitalWrite(GPS_EN, LOW); //on etein le GPS ICI
  //digitalWrite(PinLEDGPS,LOW);
@@ -125,20 +113,41 @@ do {
  Serial.println("fix? " + String(GPS.fix));
  
   SENDALL();
+  
+//--------------------interuptions ------------------------
+  
+  pinMode(PinEAU, INPUT_PULLUP);
+  //attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //mettre un condensateur anti rebont !!
+  LowPower.attachInterruptWakeup(PinEAU, alarmEventEAU, FALLING);
+  pinMode(PinMOV, INPUT_PULLUP);
+  //attachInterrupt(digitalPinToInterrupt(PinMOV), alarmEventMOV, FALLING);
+  LowPower.attachInterruptWakeup(PinMOV, alarmEventMOV, FALLING);
+  pinMode(PinCLK, INPUT_PULLUP);
+  //attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
+  LowPower.attachInterruptWakeup(PinCLK, alarmEventCLK, FALLING);
+  
   mma.clearInterrupt(); //au cas ou il y a eu detection de mouvement pendant la recherge cela l'anulle (meme s'il n'y a aucune conséquance sur l'envoie de nv msg)
-  Serial.println("start V7.5");
+  Serial.println("start V8");
+  digitalWrite(PinLEDProg,LOW);
 }
 
-void loop()
+void loop()//-------------------------------------------------------------------------------------------------------------------------------
 {
+digitalWrite(PinLEDProg,HIGH);
 
-  if(alarmOccurredCLK) {Serial.println("CLK"); alarmOccurredCLK=false; };
+  if(alarmOccurredCLK) {  //interuption horloge
+ //   digitalWrite(LED_BUILTIN,HIGH);
+    
+    Serial.println("CLK : " + String(NBalarmOccurredCLK) + "\t"); 
+   
+    alarmOccurredCLK=false; 
   
-  if (millis() - timer >= 5000)
+ 
+//  Serial.println(String(NBalarmOccurredCLK) +" == "+ String(NBCLKP)); 
+  if(NBalarmOccurredCLK == NBCLKP) // tout les deux coup d'horloge après une interuption on reset les flags
 {
-  digitalWrite(LED_BUILTIN,HIGH);
-  Serial.println("Millis");
-
+  NBCLKP=0;  Serial.println("RESET"); 
+  
   digitalWrite(PinLEDEAU,!digitalRead(PinEAU));
 
   alarmOccurredEAUP = false;
@@ -148,15 +157,23 @@ void loop()
   
  // Serial.println(mma.readRegister(0x0C) && 0x04);
   mma.clearInterrupt();
-  delay(100);
+  delay(10);
   
   bool flag = (mma.readRegister(0x0C) && 0x04);
   digitalWrite(PinLEDMOV,flag);
+} 
   
-  digitalWrite(LED_BUILTIN,LOW);
-  tour++;
-  timer=millis();
+  
+  if(NBalarmOccurredCLK >= NBsendvie)
+{
+  SENDVIE();
+  NBalarmOccurredCLK=0;
 }
+
+
+ // timer=millis();
+//  digitalWrite(PINLEDProg,LOW);
+} // FIN CLK
 
 
 if (alarmOccurredEAU == true && alarmOccurredEAUP==false) 
@@ -167,6 +184,18 @@ if (alarmOccurredEAU == true && alarmOccurredEAUP==false)
   alerte=alerte_EAU;
   
   SENDALL();
+
+  Serial.println(NBalarmOccurredCLK);
+  NBCLKP = NBalarmOccurredCLK;  
+ 
+  if(NBCLKP+NBreset > NBsendvie){ //si le nombre de coup d'horloge avant le réset est plus grand que le coup d'horloge total 
+    NBCLKP=NBCLKP+NBreset-NBsendvie;    //sachant que si c'est egal à 0 c'est imposible d'ou le +1
+  } else {                        //SI NBCLKP+NBreset = 7 et NBsendvie = 5 :7-5 = 2
+    NBCLKP=NBCLKP+NBreset;        //si c'est pas le cas on ajoute le nombre avant reset
+  }
+   Serial.println(NBCLKP);
+  if(NBCLKP>NBsendvie) NBCLKP=1; //au cas ou cela ne fonctionne pas 
+  
    alarmOccurredEAU = false;
    alarmOccurredEAUP = true;
 }
@@ -178,19 +207,27 @@ else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modifica
   
   alerte=alerte_MOV;
   mma.enableInterrupt();
-  delay(100);
+  delay(10);
   SENDALL();
+
+  Serial.println(NBalarmOccurredCLK);
+  NBCLKP = NBalarmOccurredCLK;  
+ 
+  if(NBCLKP+NBreset > NBsendvie){ //si le nombre de coup d'horloge avant le réset est plus grand que le coup d'horloge total 
+    NBCLKP=NBCLKP+NBreset-NBsendvie;    //sachant que si c'est egal à 0 c'est imposible d'ou le +1
+  } else {                        //SI NBCLKP+NBreset = 7 et NBsendvie = 5 :7-5 = 2
+    NBCLKP=NBCLKP+NBreset;        //si c'est pas le cas on ajoute le nombre avant reset
+  }
+   Serial.println(NBCLKP);
+  if(NBCLKP>NBsendvie) NBCLKP=1; //au cas ou cela ne fonctionne pas 
+
    alarmOccurredMOV = false;
    alarmOccurredMOVP = true;
 }
 
-if(tour >= 12)
-{
-  SENDVIE();
-  tour=0;
-}
-
-//LowPower.deepSleep();
+delay(50);
+digitalWrite(PinLEDProg,LOW);
+LowPower.deepSleep();
 }//fin du loop
 
 //---------------------------------------------INTERUPTIONS-----------------------------------------------------------
@@ -204,6 +241,7 @@ void alarmEventMOV() {
 
 void alarmEventCLK (void)
 {
+  NBalarmOccurredCLK++;
   alarmOccurredCLK = true;
 }
 
@@ -213,15 +251,10 @@ void SENDALL()
   digitalWrite(PinLEDSENDMSG, HIGH);
   
   //--------------------------GPS----------------------
-   if(alerte != 0){                 //quand on a une alerte=init, il n'y a pas besoins de refaire une recherge puisqu'on vient tout juste d'avoir un fix
-    digitalWrite(GPS_EN, HIGH);
-   
-    delay(50);
-    lectureGPS();
-    digitalWrite(GPS_EN, LOW);
+   if(alerte != 0 && !delestage){                 //quand on a une alerte=init, il n'y a pas besoins de refaire une recherge puisqu'on vient tout juste d'avoir un fix
+    lectureGPS();                               // si on a plus assé de batterie on n'utilise plus le gps
    }
-    infoGPS();
-  //-------------------fin GPS-------------------------
+  //  infoGPS();
   
  batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
 
@@ -240,8 +273,8 @@ void SENDALL()
   buffer[6] = (uint8_t)(latitude >> 16);
   buffer[7] = (uint8_t)(latitude >> 8);
   buffer[8] = (uint8_t)latitude;
-  errorsendA = lora.send(buffer, 9);
-  Serial.println("Voici le code d'erreur_: " + String(errorsendA)); 
+//  errorsendA = lora.send(buffer, 9);
+//  Serial.println("Voici le code d'erreur_: " + String(errorsendA)); 
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW);
@@ -250,44 +283,54 @@ void SENDALL()
 void SENDVIE()
 {
   digitalWrite(PinLEDSENDMSG, HIGH);
-  Serial.println("Send VIE");
+  Serial.print("Send VIE");
   
   batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
 
  if (alerte == alerte_EAU || alerte == alerte_MOV) {  //si une alérte a été précédament envoyé alors on renvoie une deuxieme foit cette alerte
 
 } else  if(batterie < seuil_critique) { //si la batterie est vide on envoie l'alerte sinon on envoie le msg vie 
-  alerte=alerte_BAT;
-                      // si batterie vide alors on rentre dans un mode dégradé (GPS désactivé) == a coder
+  alerte = alerte_BAT;
+  delestage = true;                    // si batterie vide alors on rentre dans un mode dégradé (GPS désactivé) == a coder
 } else
 {
-  alerte=alerte_VIE;
+  alerte = alerte_VIE;
+  delestage = false; 
 }
+digitalWrite(PinLEDAlerteBat,delestage);
 
-   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
+   Serial.print("\t \t Send alerte: " + String(alerte) +"\n");
 
   int errorsendB;
 
   uint8_t buffer[1];  
    buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
-   
-  errorsendB =lora.send(buffer, 1); 
-  Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
+// errorsendB =lora.send(buffer, 1); 
+
+//  Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
   
-  delay(50);
+  delay(10);
   digitalWrite(PinLEDSENDMSG, LOW); 
   alerte=alerte_VIE;
 }
 
 /*
-while (modem.available()) {
-    rcv[i++] = (char)modem.read();
+ time = millis();
+ char tableau[64];
+ int i = 0;
+ 
+do {
+  while (modem.available()) {
+    tableau[i++] = (char)modem.read();
   }
+ } while (!GPS.fix && (millis() - time) <= LoRatimeout);
+  
   Serial.print("Received: ");
   for (unsigned int j = 0; j < i; j++) {
-    Serial.print(rcv[j] >> 4, HEX);
-    Serial.print(rcv[j] & 0xF, HEX);
-    Serial.print(" ");
+ //   Serial.print(tableau[j] >> 4, HEX);
+ //   Serial.print(tableau[j] & 0xF, HEX);
+    Serial.print(tableau[j]);
+  //  Serial.print(" ");
   }
   Serial.println();
 */
@@ -349,7 +392,8 @@ void infoGPS(void)
 
 void lectureGPS(void)
 {
-  GPStime = millis(); 
+  digitalWrite(GPS_EN, HIGH);
+  time = millis(); 
 //  timer = millis();
      //si je recoit une nouvelle trame je sort de la boucle et que que son CRC est OK
   do {   //attente d'une nouvelle trame
@@ -369,16 +413,16 @@ void lectureGPS(void)
    //   Serial.println("\t CRC \t OK \t" + String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
 //   j'attend de recevoir deux trames bonnes pour sortir de la boucle (pb rencontré : si je prend la premire recue c'est très probable que c'est celle que j'ai reçu la derniere fois
 //  if(!GPS.fix) nombre=0;
+    //  Serial.println("attente d'un fix");
       }
     }
-  } while ((nombre<2 || !GPS.fix) && (millis() - GPStime) <= GPStimeout); //2 minutes
-
-  Serial.println("\t fix? " + String(GPS.fix) + "\t temps mis pour trouver le fix: " + String(millis() - GPStime));
+  } while ((nombre<2 || !GPS.fix) && (millis() - time) <= GPStimeout); //2 minutes
+  digitalWrite(GPS_EN, LOW);
+  Serial.println("\t fix? " + String(GPS.fix) + "\t temps mis pour trouver le fix: " + String(millis() - time));
 
   nombre=0 ;
   longitude= conv.float_int32(GPS.longitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
   latitude= conv.float_int32(GPS.latitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
- // digitalWrite(PinLEDGPS,LOW);
 }
 
 uint8_t lecture_batt (void)
@@ -389,7 +433,7 @@ uint8_t lecture_batt (void)
   val = analogRead(PinBatt);   //on lit la tension sur la broche PinBatt
  
   val=(val*3.3)/1023.0;
-  Serial.println("tension en volt : " + String(val));
+ // Serial.println("tension en volt : " + String(val));
   
   val=val/0.234;   //coef pont diviseur = 0.22 R1 = 326k, R2=100k
   val=val-10.0;   //precision de 0.16 (5/31) sur 5 volts au lieus des 0.45 V (14/31)
