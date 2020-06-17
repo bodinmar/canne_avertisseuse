@@ -16,7 +16,7 @@ void MMA8451_IRQ::enableInterrupt() {
   writeRegister8(0x15, 0xF8);
   // Threshold Setting Value for the Motion detection of > 2G
  // writeRegister8(0x17, 0x24);
-  writeRegister8(0x17, 0x17);  // > 1,5G (0.063/LSB)
+  writeRegister8(0x17, 0x20);  // > 2G (0.063/LSB)
   // Set the debounce counter to eliminate false readings for 100 Hz sample rate with a requirement of 100 ms timer
   writeRegister8(0x18, 0x0A);
   /*toute les 10 ms (mode normal + 100 HZ) count debouce register s'incrémente de 1. pax ex si 0x18 vaut 4 au bout de 40 ms on interuption peut etre denouveau établie */

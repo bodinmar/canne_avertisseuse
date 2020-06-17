@@ -15,7 +15,7 @@
  */
 /*OTAA connection adresse*/
 /*--------------------------------------------*/
-#define APP_EUI "70B3D57ED001D6F7"
+#define APP_EUI ""
 #define APP_KEY ""
 /*------------------------------------------*/
 /*ABP connection adresss

@@ -95,8 +95,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //antit rebont !!
   pinMode(PinMOV, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PinMOV), alarmEventMOV, FALLING);
-  pinMode(PinCLK, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
+//  pinMode(PinCLK, INPUT_PULLUP);
+//  attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
   
 //--------------------------GPS--------------------------
 Serial.println("Start GPS");
@@ -126,13 +126,11 @@ do {
  
   SENDALL();
   mma.clearInterrupt(); //au cas ou il y a eu detection de mouvement pendant la recherge cela l'anulle (meme s'il n'y a aucune conséquance sur l'envoie de nv msg)
-  Serial.println("start V7.5");
+  Serial.println("start V7.3");
 }
 
 void loop()
 {
-
-  if(alarmOccurredCLK) {Serial.println("CLK"); alarmOccurredCLK=false; };
   
   if (millis() - timer >= 5000)
 {
@@ -184,13 +182,12 @@ else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modifica
    alarmOccurredMOVP = true;
 }
 
-if(tour >= 12)
+if(tour >= 6)
 {
   SENDVIE();
   tour=0;
 }
 
-//LowPower.deepSleep();
 }//fin loop
 
 //---------------------------------------------INTERUPTIONS-----------------------------------------------------------
@@ -250,8 +247,9 @@ void SENDALL()
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW);
 
- //reception du message retour 
- //si pas reçu alors on réenvoi le msg (1 ou 2 fois)
+  //reception du message retour 
+  //if (RECEPTION())
+  //si pas reçu alors on réenvoi le msg (1 ou 2 fois)
  }
 
 void SENDVIE()
@@ -290,16 +288,17 @@ void SENDVIE()
 }
 
 /*
-while (modem.available()) {
-    rcv[i++] = (char)modem.read();
-  }
-  Serial.print("Received: ");
-  for (unsigned int j = 0; j < i; j++) {
-    Serial.print(rcv[j] >> 4, HEX);
-    Serial.print(rcv[j] & 0xF, HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
+bool RECEPTION()
+{
+bool etat=false;
+int32_t timeout = millis(); 
+
+do{
+lora.read();
+
+}while(!etat && (millis()-timeout) <= 60000);
+  return etat;
+}
 */
 //---------------------------------------------GPS------------------------------------------------------------
 void startGPS(){
@@ -369,14 +368,14 @@ void lectureGPS(void)
     
     if (GPS.newNMEAreceived()) 
     {
-    //  Serial.print("NEW");
+      Serial.print("NEW");
       if(!GPS.parse(GPS.lastNMEA()))
       {
-   //     Serial.println("\t CRC NO \t" +  String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
+        Serial.println("\t CRC NO \t" +  String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
       } else
       {
       nombre++;
-   //   Serial.println("\t CRC \t OK \t" + String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
+      Serial.println("\t CRC \t OK \t" + String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
 //   j'attend de recevoir deux trames bonnes pour sortir de la boucle (pb rencontré : si je prend la premire recue c'est très probable que c'est celle que j'ai reçu la derniere fois
 //  if(!GPS.fix) nombre=0;
       }
