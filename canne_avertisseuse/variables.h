@@ -7,7 +7,7 @@
 #define alerte_MOV  3
 #define alerte_BAT  4
 
-#define GPStimeout 1000 //
+#define GPStimeout 120000 //2 minutes
 
 //---------------------variables---------------------
 //ISRs
@@ -34,7 +34,7 @@ bool alarmOccurredMOVP = true;
 bool GPS_ENABLE = false;
 
 float seuil_critique = 11.5; //tension critique de la batterie
-bool delestage=0;   //si = 1 cela veut dire que la tension a tellement chuté que cela peut poser problème on arrete donc certain composants comme le gps
+bool delestage=0;   //si = 1 (oui) cela veut dire que la tension a tellement chuté que cela peut poser problème on arrete donc certain composants comme le gps
 /*
 11.2=0%
 11.8=25%

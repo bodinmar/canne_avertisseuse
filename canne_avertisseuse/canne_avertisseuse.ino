@@ -67,7 +67,6 @@ void setup() {
   
   Serial.begin(9600);
   while (!Serial) ;             //tant que on n'a pas ouvert le moniteur série le programme ne s'execute pas !!!
-  // toute les messages sur le port série sont a enlever lors de l'utilisation finale
   Serial.println("- Serial start");
 
 //-------------------------------------------------------------LoRa initialisation-------------------------------------------------------------------------------------
@@ -93,11 +92,11 @@ void setup() {
 //--------------------interuptions ------------------------
   
   pinMode(PinEAU, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //mettre un condensateur anti rebont !!
+  attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //antit rebont !!
   pinMode(PinMOV, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PinMOV), alarmEventMOV, FALLING);
-//  pinMode(PinCLK, INPUT_PULLUP);
-//  attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
+  pinMode(PinCLK, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PinCLK), alarmEventCLK, FALLING);
   
 //--------------------------GPS--------------------------
 Serial.println("Start GPS");
@@ -127,11 +126,13 @@ do {
  
   SENDALL();
   mma.clearInterrupt(); //au cas ou il y a eu detection de mouvement pendant la recherge cela l'anulle (meme s'il n'y a aucune conséquance sur l'envoie de nv msg)
-  Serial.println("start V7.3");
+  Serial.println("start V7.5");
 }
 
 void loop()
 {
+
+  if(alarmOccurredCLK) {Serial.println("CLK"); alarmOccurredCLK=false; };
   
   if (millis() - timer >= 5000)
 {
@@ -176,7 +177,6 @@ else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modifica
   digitalWrite(PinLEDMOV,HIGH);
   
   alerte=alerte_MOV;
-  
   mma.enableInterrupt();
   delay(100);
   SENDALL();
@@ -184,12 +184,13 @@ else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modifica
    alarmOccurredMOVP = true;
 }
 
-if(tour >= 4)
+if(tour >= 12)
 {
   SENDVIE();
   tour=0;
 }
 
+//LowPower.deepSleep();
 }//fin du loop
 
 //---------------------------------------------INTERUPTIONS-----------------------------------------------------------
@@ -209,17 +210,17 @@ void alarmEventCLK (void)
 //---------------------------------------------LORA------------------------------------------------------------
 void SENDALL()
  {
+  digitalWrite(PinLEDSENDMSG, HIGH);
+  
   //--------------------------GPS----------------------
-    if(alerte != 0){                 //quand on a une alerte=init, il n'y a pas besoins de refaire une recherge puisqu'on vient tout juste d'avoir un fix
-      digitalWrite(GPS_EN, HIGH);
+   if(alerte != 0){                 //quand on a une alerte=init, il n'y a pas besoins de refaire une recherge puisqu'on vient tout juste d'avoir un fix
+    digitalWrite(GPS_EN, HIGH);
    
-      delay(50);
-      lectureGPS();
-      digitalWrite(GPS_EN, LOW);
-    }
+    delay(50);
+    lectureGPS();
+    digitalWrite(GPS_EN, LOW);
+   }
     infoGPS();
-
-    digitalWrite(PinLEDSENDMSG, HIGH);
   //-------------------fin GPS-------------------------
   
  batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
@@ -228,10 +229,9 @@ void SENDALL()
   int errorsendA;
   
   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
-  //do{
+
   uint8_t buffer[9];
   buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
-
   buffer[1] = (uint8_t)(longitude >> 24);
   buffer[2] = (uint8_t)(longitude >> 16);
   buffer[3] = (uint8_t)(longitude >> 8);
@@ -242,18 +242,10 @@ void SENDALL()
   buffer[8] = (uint8_t)latitude;
   errorsendA = lora.send(buffer, 9);
   Serial.println("Voici le code d'erreur_: " + String(errorsendA)); 
- // if(errorsendA<0) delay(500);
-    
- // }while(errorsendA < 0);
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW);
-
-  //reception du message retour 
-  //if (RECEPTION())
-  //lora.begin();
-  //si pas reçu alors on réenvoi le msg (1 ou 2 fois)
- }
+}
 
 void SENDVIE()
 {
@@ -262,28 +254,25 @@ void SENDVIE()
   
   batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
 
- if (alerte == alerte_EAU || alerte == alerte_MOV) {    //si une alérte a été précédament envoyé alors on renvoie une deuxieme foit cette alerte
+ if (alerte == alerte_EAU || alerte == alerte_MOV) {  //si une alérte a été précédament envoyé alors on renvoie une deuxieme foit cette alerte
 
 } else  if(batterie < seuil_critique) { //si la batterie est vide on envoie l'alerte sinon on envoie le msg vie 
   alerte=alerte_BAT;
-            // si batterie vide alors on rentre dans un mode dégradé (GPS désactivé) == a coder
+                      // si batterie vide alors on rentre dans un mode dégradé (GPS désactivé) == a coder
 } else
 {
   alerte=alerte_VIE;
 }
+
    Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
-   Serial.print("\t \t Send batt: " + String(batterie) +"\n");
-  // Serial.print("\t \t Send alerte: " + String(batterie) +"\n");
+
   int errorsendB;
- // do{
+
   uint8_t buffer[1];  
    buffer[0] = (uint8_t)(alerte << 5) + (uint8_t)(batterie & 0b11111);
    
   errorsendB =lora.send(buffer, 1); 
- // Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
-
- //  if(errorsendB<0) delay(500);
- // }while(errorsendB);
+  Serial.println("Voici le code d'erreur_: " + String(errorsendB)); 
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW); 
@@ -291,17 +280,16 @@ void SENDVIE()
 }
 
 /*
-bool RECEPTION()
-{
-bool etat=false;
-int32_t timeout = millis(); 
-
-do{
-lora.read();
-
-}while(!etat && (millis()-timeout) <= 60000);
-  return etat;
-}
+while (modem.available()) {
+    rcv[i++] = (char)modem.read();
+  }
+  Serial.print("Received: ");
+  for (unsigned int j = 0; j < i; j++) {
+    Serial.print(rcv[j] >> 4, HEX);
+    Serial.print(rcv[j] & 0xF, HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
 */
 //---------------------------------------------GPS------------------------------------------------------------
 void startGPS(){
@@ -371,14 +359,14 @@ void lectureGPS(void)
     
     if (GPS.newNMEAreceived()) 
     {
-      Serial.print("NEW");
+    //  Serial.print("NEW");
       if(!GPS.parse(GPS.lastNMEA()))
       {
-        Serial.println("\t CRC NO \t" +  String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed)); //la trame n'est pas bonne
+   //     Serial.println("\t CRC NO \t" +  String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
       } else
       {
       nombre++;
-      Serial.println("\t CRC \t OK \t" + String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed)); //la trame est bonne
+   //   Serial.println("\t CRC \t OK \t" + String(nombre) + "\t" + String(GPS.fix) + "\t" + String(GPS.satellites) + "\t" + String(GPS.speed));
 //   j'attend de recevoir deux trames bonnes pour sortir de la boucle (pb rencontré : si je prend la premire recue c'est très probable que c'est celle que j'ai reçu la derniere fois
 //  if(!GPS.fix) nombre=0;
       }
@@ -397,8 +385,8 @@ uint8_t lecture_batt (void)
 {
  // float val=11.3;
   float val;
-  analogReference(AR_DEFAULT);  //la tention de référence est 3.3v cela veut dire que 1023 = 3.3V
-  val = analogRead(PinBatt);  //on lit la tension sur la broche PinBatt
+  analogReference(AR_DEFAULT);   //la tention de référence est 3.3v cela veut dire que 1023 = 3.3V
+  val = analogRead(PinBatt);   //on lit la tension sur la broche PinBatt
  
   val=(val*3.3)/1023.0;
   Serial.println("tension en volt : " + String(val));
@@ -412,6 +400,6 @@ uint8_t lecture_batt (void)
     return val;
   } else {
      val=(val*31.0)/4.0;  //on code ici les 4 Volts sur 5 bits (que l'on va décoder plus tard grace a TTN)
-     return val;
+     return val; 
   }  
 }
