@@ -1,4 +1,4 @@
-
+// fichier comprenant toutes les variables
 #define GPSSerial Serial1
 
 #define alerte_INIT 0
@@ -8,8 +8,8 @@
 #define alerte_BAT  4
 
 #define GPStimeout 10000 //120000 = 2 minutes
-#define NBsendvie 5 //10sec*5 = 50 sec
-#define NBreset 2 //10sec*2 = 20 sec      la led reset alumé pandant 20 seconde après l'envoie du message
+#define NBsendvie 5 //10sec*5 = 50 sec    nombre de coup d'horloge avant le message de vie
+#define NBreset 2 //10sec*2 = 20 sec      la led reset alumé pandant 20 seconde après l'envoie du message nombre de coup d'horloge avant le reset
 #define LoRatimeout 60000 //1 minute pour recevoir un msg
 
 //---------------------variables---------------------

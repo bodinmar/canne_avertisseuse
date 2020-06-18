@@ -1,4 +1,4 @@
-//interuptions + GPS
+//interuptions MOV & EAU + GPS
 //messages LoRa
 //lecture batterie
 //sommeil
