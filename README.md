@@ -38,6 +38,14 @@ ce programme ne fonctionne quand présence d'une horloge externe
 * regulateur DC/DC 4,6-32V ->3,3V https://fr.rs-online.com/web/p/regulateurs-a-decoupage/7553429/
 <img src=https://user-images.githubusercontent.com/32598441/61883931-9321c900-aefb-11e9-8f70-7ebc4981d139.jpg width="100" />
 
+### libraries
+
+Librairies à installer :
+- Adafruit GPS
+- Adafruit MMA8451
+- Adafruit Sensor (s'installe normalement avec Adafruit MMA8451)
+- MKRWAN 
+
 ## setting
 to start compiling the program and uploading it. By reading the serial port you can get the ```DEV_ID``` to configure the device on The Things network.
 <img src=https://user-images.githubusercontent.com/32598441/61884466-9073a380-aefc-11e9-9db9-392b89730151.PNG width="1000" />
@@ -69,8 +77,9 @@ In the case of one of these alerts, a message containing the alert type, battery
 otherwise only a heartbeat is sent regularly 
 
 ### Sensor
-* Water sensor: it is made up of 2 electrodes if the current manages to pass between the 2 electrodes, the input A6 goes from 0v to ~3.3V. The water is detected 
-* Accelerometer: If one of the acceleration values changes sufficiently on one of the axes, it can be deduced that the rod is no longer in its initial position 
+* Water sensor: it is made up of 2 electrodes if the current manages to pass between the 2 electrodes, the input 4 goes from 3.3v to 0V  The water is detected 
+* Accelerometer: If an acceleration is detected the mouvement is detected (the value of the acceleration is adjustable in the MMA8451_IRQ.h library). 
+
 * GPS: The GPS gives us the geographical position of the device. A measurement is only taken at the start or when a sensor detects something 
 * Voltmeter for the battery: the battery level is regularly monitored to prevent any system failure    
 
