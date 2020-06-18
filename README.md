@@ -18,9 +18,8 @@ mettre une photo ici du circuit
 ### Compenent
 
 * Arduino MKR WAN 1300 - 35€ HT https://store.arduino.cc/arduino-mkr-wan-1300-lora-connectivity-1414
+ or Arduino MKR WAN 1310 - 33€ HT https://store.arduino.cc/mkr-wan-1310
 <img src=https://user-images.githubusercontent.com/32598441/61883824-679ede80-aefb-11e9-8246-e1c03fb2b4e8.jpg width="100" />
-or
-* Arduino MKR WAN 1310 - 33€ HT https://store.arduino.cc/mkr-wan-1310
 
 * Antenna for 868 MHZ - ~3,9€ HT https://bit.ly/2SDVVCL
 <img src=https://user-images.githubusercontent.com/32598441/61883832-6a99cf00-aefb-11e9-862d-c804beff6443.jpg width="100" />
@@ -66,9 +65,9 @@ or
 
 * Battery PS1270GB 12V 7,0Ah - au plomb - 19,92 € HT - https://www.gotronic.fr/art-batterie-ps1270gb-5655.htm
 
-total = € HT
+Total = 157,75€ HT
 
-### libraries
+### Libraries
 
 Librairies à installer :
 - Adafruit GPS
@@ -79,7 +78,7 @@ Librairies à installer :
 Pour installer les librairies ouvrir le gestionnaire grâce à CTRL+MAJ+I ou Croquis -> Inclure une Blibliothèque -> Gérer les Blibliothèques.
 Rechercher dans la barre de recherche le nom de la blibliothèque à installer.
 
-## setting
+## Setting
 to start compiling the program and uploading it. By reading the serial port you can get the ```DEV_ID``` to configure the device on The Things network.
 <img src=https://user-images.githubusercontent.com/32598441/61884466-9073a380-aefc-11e9-9db9-392b89730151.PNG width="1000" />
 
