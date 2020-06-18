@@ -53,15 +53,15 @@ mettre une photo ici du circuit
 * NE555 - 0,29€ HT
 
 * Resistors and capacitors ~2€
-- 270k
-- 120k
-- 100k
-- 56k
-- 10k
-- 2,7k
-- 100 µF
-- 330 nF
-- 100 nF
+*270k
+120k
+100k
+56k
+10k
+2,7k
+100 µF
+330 nF
+100 nF
 
 * Battery PS1270GB 12V 7,0Ah - au plomb - 19,92 € HT - https://www.gotronic.fr/art-batterie-ps1270gb-5655.htm
 
