@@ -1,6 +1,7 @@
 //interuptions + GPS
 //messages LoRa
 //lecture batterie
+//sommeil
  
 #include <ArduinoLowPower.h>
 #include "MMA8451_IRQ.h"
@@ -21,20 +22,18 @@ Adafruit_GPS GPS(&GPSSerial);
 MMA8451_IRQ mma = MMA8451_IRQ();
 
 //fonctions 
-void startGPS(void);
-void lectureGPS(void);
-void infoGPS(void);
-void SENDALL(void);
-void SENDVIE(void);
-uint8_t lecture_batt(void);
+void startGPS(void);        //demarre de gps
+void lectureGPS(void);      //recherche une position gps
+void infoGPS(void);         //affiche certaines information du gps
+void SENDALL(void);         //envoie un message complet
+void SENDVIE(void);         //envoie un message vie
+uint8_t lecture_batt(void); //lecture de la tension de la batterie
+bool accuseRECEPTION(void);         //accusé de reception (en cour de dévelopement) revoie si on a bien reçu le message ou non
 
-//fonctions exécutées lors d'une interuption
+//fonctions exécutées lors d'une interuption (ISR)
 void alarmEventEAU(void);
 void alarmEventMOV(void);
 void alarmEventCLK(void);
-
-//en cour de dévelopement:
-bool RECEPTION(void);
 
 void setup() {
 
@@ -102,19 +101,16 @@ Serial.println("Recuperation GPS");
 do {
   GPS.read();
   GPS.parse(GPS.lastNMEA());
- 
   Serial.println('0');
-
  } while (!GPS.fix && (millis() - time) <= GPStimeout); // il faut qu'on est une position gps ou timout de 3 mins
  
  digitalWrite(GPS_EN, LOW); //on etein le GPS ICI
- //digitalWrite(PinLEDGPS,LOW);
  
  Serial.println("fix? " + String(GPS.fix));
  
   SENDALL();
   
-//--------------------interuptions ------------------------
+//--------------------déclaration des interuptions ------------------------
   
   pinMode(PinEAU, INPUT_PULLUP);
   //attachInterrupt(digitalPinToInterrupt(PinEAU), alarmEventEAU, FALLING);  //mettre un condensateur anti rebont !!
@@ -133,97 +129,90 @@ do {
 
 void loop()//-------------------------------------------------------------------------------------------------------------------------------
 {
-digitalWrite(PinLEDProg,HIGH);
+  digitalWrite(PinLEDProg,HIGH);
 
   if(alarmOccurredCLK) {  //interuption horloge
- //   digitalWrite(LED_BUILTIN,HIGH);
     
     Serial.println("CLK : " + String(NBalarmOccurredCLK) + "\t"); 
-   
-    alarmOccurredCLK=false; 
+    alarmOccurredCLK=false; //on reset le drapeau
   
- 
-//  Serial.println(String(NBalarmOccurredCLK) +" == "+ String(NBCLKP)); 
-  if(NBalarmOccurredCLK == NBCLKP) // tout les deux coup d'horloge après une interuption on reset les flags
-{
-  NBCLKP=0;  Serial.println("RESET"); 
+//  Serial.println(String(NBalarmOccurredCLK) +" == "+ String(NBCLK)); 
+    if(NBalarmOccurredCLK == NBCLK) // tout les deux coup d'horloge après une interuption on reset les flags
+    {
+      NBCLK=0;  Serial.println("RESET"); 
   
-  digitalWrite(PinLEDEAU,!digitalRead(PinEAU));
+      digitalWrite(PinLEDEAU,!digitalRead(PinEAU));
 
-  alarmOccurredEAUP = false;
-  alarmOccurredMOVP = false;
-  alarmOccurredEAU = false;
-  alarmOccurredMOV = false;
+      alarmOccurredEAUP = false;
+      alarmOccurredMOVP = false;
+      alarmOccurredEAU = false;
+      alarmOccurredMOV = false;
   
  // Serial.println(mma.readRegister(0x0C) && 0x04);
-  mma.clearInterrupt();
-  delay(10);
+      mma.clearInterrupt();
+      delay(10);
   
-  bool flag = (mma.readRegister(0x0C) && 0x04);
-  digitalWrite(PinLEDMOV,flag);
-} 
+      bool flag = (mma.readRegister(0x0C) && 0x04);
+      digitalWrite(PinLEDMOV,flag);
+    } 
   
   
-  if(NBalarmOccurredCLK >= NBsendvie)
-{
-  SENDVIE();
-  NBalarmOccurredCLK=0;
-}
-
+    if(NBalarmOccurredCLK >= NBsendvie)
+    {
+      SENDVIE();
+      NBalarmOccurredCLK=0;
+    }
 
  // timer=millis();
 //  digitalWrite(PINLEDProg,LOW);
-} // FIN CLK
+  } // FIN CLK
 
 
-if (alarmOccurredEAU == true && alarmOccurredEAUP==false) 
-{
-  Serial.println("INTERUPTION_EAU");
-  digitalWrite(PinLEDEAU,HIGH);
+  if (alarmOccurredEAU == true && alarmOccurredEAUP==false) 
+  {
+    Serial.println("INTERUPTION_EAU");
+    digitalWrite(PinLEDEAU,HIGH);
   
-  alerte=alerte_EAU;
-  
-  SENDALL();
+    alerte=alerte_EAU;
+    SENDALL();
 
-  Serial.println(NBalarmOccurredCLK);
-  NBCLKP = NBalarmOccurredCLK;  
+    Serial.println(NBalarmOccurredCLK);
  
-  if(NBCLKP+NBreset > NBsendvie){ //si le nombre de coup d'horloge avant le réset est plus grand que le coup d'horloge total 
-    NBCLKP=NBCLKP+NBreset-NBsendvie;    //sachant que si c'est egal à 0 c'est imposible d'ou le +1
-  } else {                        //SI NBCLKP+NBreset = 7 et NBsendvie = 5 :7-5 = 2
-    NBCLKP=NBCLKP+NBreset;        //si c'est pas le cas on ajoute le nombre avant reset
-  }
-   Serial.println(NBCLKP);
-  if(NBCLKP>NBsendvie) NBCLKP=1; //au cas ou cela ne fonctionne pas 
+    if(NBCLK+NBreset > NBsendvie){ //si le nombre de coup d'horloge avant le réset est plus grand que le coup d'horloge total 
+      NBCLK=NBalarmOccurredCLK+NBreset-NBsendvie;    //sachant que si c'est egal à 0 c'est imposible d'ou le +1
+    } else {                        //SI NBalarmOccurredCLK+NBreset = 7 et NBsendvie = 5 :7-5 = 2
+      NBCLK=NBalarmOccurredCLK+NBreset;        //si c'est pas le cas on ajoute le nombre avant reset
+    }
+    Serial.println(NBCLK);
+    if(NBCLK>NBsendvie) NBCLK=1; //au cas ou cela ne fonctionne pas 
   
-   alarmOccurredEAU = false;
-   alarmOccurredEAUP = true;
-}
-
-else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modification : else ici
-
-  Serial.println("INTERUPTION_MOV");
-  digitalWrite(PinLEDMOV,HIGH);
-  
-  alerte=alerte_MOV;
-  mma.enableInterrupt();
-  delay(10);
-  SENDALL();
-
-  Serial.println(NBalarmOccurredCLK);
-  NBCLKP = NBalarmOccurredCLK;  
- 
-  if(NBCLKP+NBreset > NBsendvie){ //si le nombre de coup d'horloge avant le réset est plus grand que le coup d'horloge total 
-    NBCLKP=NBCLKP+NBreset-NBsendvie;    //sachant que si c'est egal à 0 c'est imposible d'ou le +1
-  } else {                        //SI NBCLKP+NBreset = 7 et NBsendvie = 5 :7-5 = 2
-    NBCLKP=NBCLKP+NBreset;        //si c'est pas le cas on ajoute le nombre avant reset
+    alarmOccurredEAU = false;
+    alarmOccurredEAUP = true;
   }
-   Serial.println(NBCLKP);
-  if(NBCLKP>NBsendvie) NBCLKP=1; //au cas ou cela ne fonctionne pas 
 
-   alarmOccurredMOV = false;
-   alarmOccurredMOVP = true;
-}
+  else if (alarmOccurredMOV == true && alarmOccurredMOVP==false) {      //modification : else ici
+
+    Serial.println("INTERUPTION_MOV");
+    digitalWrite(PinLEDMOV,HIGH);
+  
+    alerte=alerte_MOV;
+    mma.enableInterrupt();
+    delay(10);
+    SENDALL();
+
+    Serial.println(NBalarmOccurredCLK);
+  
+    if(NBCLK+NBreset > NBsendvie){ //si le nombre de coup d'horloge avant le réset est plus grand que le coup d'horloge total 
+      NBCLK=NBalarmOccurredCLK+NBreset-NBsendvie;    //sachant que si c'est egal à 0 c'est imposible d'ou le +1
+    } else {                        //SI NBalarmOccurredCLK+NBreset = 7 et NBsendvie = 5 :7-5 = 2
+      NBCLK=NBalarmOccurredCLK+NBreset;        //si c'est pas le cas on ajoute le nombre avant reset
+    }
+    Serial.println(NBCLK);
+    if(NBCLK>NBsendvie) NBCLK=1; //au cas ou cela ne fonctionne pas 
+
+    alarmOccurredMOV = false;
+    alarmOccurredMOVP = true;
+  }
 
 delay(50);
 digitalWrite(PinLEDProg,LOW);
@@ -249,16 +238,13 @@ void alarmEventCLK (void)
 void SENDALL()
  {
   digitalWrite(PinLEDSENDMSG, HIGH);
-  
   //--------------------------GPS----------------------
    if(alerte != 0 && !delestage){                 //quand on a une alerte=init, il n'y a pas besoins de refaire une recherge puisqu'on vient tout juste d'avoir un fix
     lectureGPS();                               // si on a plus assé de batterie on n'utilise plus le gps
    }
   //  infoGPS();
-  
- batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
+  batterie=lecture_batt(); //----------------recuperation de la tension batterie-------- 
 
-  //-----------------------fin batt------------------------------
   int errorsendA;
   
   Serial.print("\t \t \t Send alerte: " + String(alerte) +"\n");
@@ -278,6 +264,7 @@ void SENDALL()
   
   delay(50);
   digitalWrite(PinLEDSENDMSG, LOW);
+  accuseRECEPTION();
 }
 
 void SENDVIE()
@@ -314,26 +301,7 @@ digitalWrite(PinLEDAlerteBat,delestage);
   alerte=alerte_VIE;
 }
 
-/*
- time = millis();
- char tableau[64];
- int i = 0;
- 
-do {
-  while (modem.available()) {
-    tableau[i++] = (char)modem.read();
-  }
- } while (!GPS.fix && (millis() - time) <= LoRatimeout);
-  
-  Serial.print("Received: ");
-  for (unsigned int j = 0; j < i; j++) {
- //   Serial.print(tableau[j] >> 4, HEX);
- //   Serial.print(tableau[j] & 0xF, HEX);
-    Serial.print(tableau[j]);
-  //  Serial.print(" ");
-  }
-  Serial.println();
-*/
+
 //---------------------------------------------GPS------------------------------------------------------------
 void startGPS(){
   
@@ -421,8 +389,8 @@ void lectureGPS(void)
   Serial.println("\t fix? " + String(GPS.fix) + "\t temps mis pour trouver le fix: " + String(millis() - time));
 
   nombre=0 ;
-  longitude= conv.float_int32(GPS.longitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
-  latitude= conv.float_int32(GPS.latitudeDegrees, 5);  //ajout-------------------------------------------lora------------------------
+  longitude= conv.float_int32(GPS.longitudeDegrees, 5); //convertit le nombre flottant en nombre entier
+  latitude= conv.float_int32(GPS.latitudeDegrees, 5);  
 }
 
 uint8_t lecture_batt (void)
@@ -446,4 +414,29 @@ uint8_t lecture_batt (void)
      val=(val*31.0)/4.0;  //on code ici les 4 Volts sur 5 bits (que l'on va décoder plus tard grace a TTN)
      return val; 
   }  
+}
+
+bool accuseRECEPTION(void)
+{
+  /*
+ time = millis();
+ char tableau[64];
+ int i = 0;
+ 
+do {
+  while (modem.available()) {
+    tableau[i++] = (char)modem.read();
+  }
+ } while (!GPS.fix && (millis() - time) <= LoRatimeout);
+  
+  Serial.print("Received: ");
+  for (unsigned int j = 0; j < i; j++) {
+ //   Serial.print(tableau[j] >> 4, HEX);
+ //   Serial.print(tableau[j] & 0xF, HEX);
+    Serial.print(tableau[j]);
+  //  Serial.print(" ");
+  }
+  Serial.println();
+  return 
+*/
 }

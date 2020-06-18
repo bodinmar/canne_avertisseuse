@@ -1,6 +1,7 @@
 ### Notes
-note de cette version : 17/06/2020
+note de cette version : 17/06/2020	V8
 Fonctionne avec la canne n°1
+ce programme ne fonctionne quand présence d'une horloge externe
 
 ### Reste à faire : 
 - gps ??
