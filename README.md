@@ -1,7 +1,7 @@
 ### Notes
-note de cette version : 17/06/2020	V8
+note de cette version : 18/06/2020	V8
 Fonctionne avec la canne n°1
-ce programme ne fonctionne quand présence d'une horloge externe
+Ce programme ne fonctionne quand présence d'une horloge externe
 
 ### Reste à faire : 
 - gps ??
@@ -10,33 +10,63 @@ ce programme ne fonctionne quand présence d'une horloge externe
 
 # Canne-avertisseuse
 "La canne_avertisseuse" is an alert system for gravity irrigation. They use LoRa to communicate and detect the presence of water  
+
 ## Hardware
 
+mettre une photo ici du circuit
 
 ### Compenent
 
-* Arduino MKR WAN 1300 - 28€(25/07/2019) https://bit.ly/2GuevrS
+* Arduino MKR WAN 1300 - 35€ HT https://store.arduino.cc/arduino-mkr-wan-1300-lora-connectivity-1414
 <img src=https://user-images.githubusercontent.com/32598441/61883824-679ede80-aefb-11e9-8246-e1c03fb2b4e8.jpg width="100" />
+or
+* Arduino MKR WAN 1310 - 33€ HT https://store.arduino.cc/mkr-wan-1310
 
-* Antenne for 868 MHZ - ~5€ https://bit.ly/2SDVVCL
+* Antenna for 868 MHZ - ~3,9€ HT https://bit.ly/2SDVVCL
 <img src=https://user-images.githubusercontent.com/32598441/61883832-6a99cf00-aefb-11e9-862d-c804beff6443.jpg width="100" />
 
-* GPS Adafruit 745 - 41€  https://bit.ly/2LHuB5R
+* GPS Adafruit 745 - 35,53 € HT  https://bit.ly/2LHuB5R
 <img src=https://user-images.githubusercontent.com/32598441/61883842-6e2d5600-aefb-11e9-97ed-8e78c9d13dd1.jpg width="100" />
 
-*accelerometer Adafruit MMA8451 - 9€ https://bit.ly/2Mcii0F
+* Antenna for GPS SMA SMA960 - 13,58€ HT
+
+* accelerometer Adafruit MMA8451 - 6,95€ HT https://bit.ly/2Mcii0F
 <img src=https://user-images.githubusercontent.com/32598441/61883851-71284680-aefb-11e9-8e40-f462b3d68d67.jpg width="100" />
 
-* 2× Female connector 14 in line -3,41€ https://fr.rs-online.com/web/p/fiches-femelles-pour-ci/7679347/ 
+* 2× Female connector 36 in line - 2,08 € HT https://www.gotronic.fr/art-connecteur-fh136z-4462.htm
 <img src=https://user-images.githubusercontent.com/32598441/61883903-8a30f780-aefb-11e9-9f2b-a45f07767ee2.jpg width="100" />
 
-* Females connector 8 and 9 
+* Porte-fusible PF3 - 0,21 € HT
 
-* 2× terminal block connector https://fr.rs-online.com/web/p/products/1814377/
+* Plaque d'essais BCS160, 100 x 160 mm pastilles - 3,08 € HT
+
+* 3× terminal block connector - 0,589 € HT https://fr.rs-online.com/web/p/products/1814377/
 <img src=https://user-images.githubusercontent.com/32598441/61883918-8ef5ab80-aefb-11e9-98b9-c4e7c0803b27.jpg width="100" />
 
-* regulateur DC/DC 4,6-32V ->3,3V https://fr.rs-online.com/web/p/regulateurs-a-decoupage/7553429/
+* regulateur DC/DC 4,6-32V ->3,3V - 10€ HT https://fr.rs-online.com/web/p/regulateurs-a-decoupage/7553429/
 <img src=https://user-images.githubusercontent.com/32598441/61883931-9321c900-aefb-11e9-8f70-7ebc4981d139.jpg width="100" />
+
+* Case ~15€ 
+
+* 2 waterproof switch - 2,33 € HT
+* 10 leds - 0,33€ HT
+* Inverseur unipolaire ESP101 - 0,79 € HT
+* NE555 - 0,29€ HT
+
+* Resistors and capacitors ~2€
+- 270k
+- 120k
+- 100k
+- 56k
+- 10k
+- 2,7k
+- 100 µF
+- 330 nF
+- 100 nF
+
+* Battery PS1270GB 12V 7,0Ah - au plomb - 19,92 € HT - https://www.gotronic.fr/art-batterie-ps1270gb-5655.htm
+
+total = € HT
 
 ### libraries
 
@@ -45,6 +75,9 @@ Librairies à installer :
 - Adafruit MMA8451
 - Adafruit Sensor (s'installe normalement avec Adafruit MMA8451)
 - MKRWAN 
+
+Pour installer les librairies ouvrir le gestionnaire grâce à CTRL+MAJ+I ou Croquis -> Inclure une Blibliothèque -> Gérer les Blibliothèques.
+Rechercher dans la barre de recherche le nom de la blibliothèque à installer.
 
 ## setting
 to start compiling the program and uploading it. By reading the serial port you can get the ```DEV_ID``` to configure the device on The Things network.
@@ -81,10 +114,4 @@ otherwise only a heartbeat is sent regularly
 * Accelerometer: If an acceleration is detected the mouvement is detected (the value of the acceleration is adjustable in the MMA8451_IRQ.h library). 
 
 * GPS: The GPS gives us the geographical position of the device. A measurement is only taken at the start or when a sensor detects something 
-* Voltmeter for the battery: the battery level is regularly monitored to prevent any system failure    
-
-
-
-
-
-
+* Voltmeter for the battery: the battery level is regularly monitored to prevent any system failure
