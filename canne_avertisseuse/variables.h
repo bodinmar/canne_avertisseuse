@@ -79,4 +79,8 @@ A0 Batt
 3 GPS_EN          8   PinLEDEAU
 4 EAU             7   CLK
 5 MOV             6  ne pas utiliser (led sur le mkr)
+
+led d'alimentation sur VCC
+led CLK branché en sortie du NE555
+led fix branché au module GPS
  */
