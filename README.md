@@ -1,5 +1,5 @@
 ### Notes
-note de cette version : 16/06/2020
+note de cette version : 16/06/2020  V7.5
 Fonctionne avec la canne n°1
 
 ### Reste à faire : 
